@@ -40,18 +40,22 @@ def check_and_copy_files(input_folder, output_folder, max_bond_length, min_bond_
                 if check_bond :
                     parts = line.split()
                     atom1, atom2 = parts[0], parts[1]
+                    bond_length = float(parts[2])
 
                     if all(any(pattern.match(atom) for pattern in metal_patterns) for atom in [atom1, atom2]):
-                        bond_length = float(parts[2])
-                        #print(line)
-                        #print(bond_length)
-                        if bond_length < 1.0 or bond_length > 3.0: # 这里是排除了金属-金属间的键，按1-3.0A的范围排除
+                        if bond_length < 1.0 or bond_length > 3.0: # 金属-金属
                             check_bond = False
                             break
                         else:
                             continue
 
-                    bond_length = float(parts[2])
+                    if any(pattern.match(atom) for pattern in metal_patterns for atom in [atom1, atom2]):
+                        if bond_length < 1.0 or bond_length > 3.0:  # 单金属
+                            check_bond = False
+                            break
+                        else:
+                            continue
+
                     if bond_length > max_bond_length or bond_length < min_bond_length:
                         check_bond = False
                         break
@@ -59,16 +63,16 @@ def check_and_copy_files(input_folder, output_folder, max_bond_length, min_bond_
             if check_bond:     
                 shutil.copy(file_path, output_folder)
 
-#在这里替换输入和输出文件夹的绝对路径
+
 input_folder = "/home/huangbo/v230603/outputs/20230607_162900_bonds_1-2.466_atoms_1.0/"
-output_folder = "/home/huangbo/v230603/outputs/20230607_162900_bonds_1-2.466_atoms_1.0_metal_1-3.0/"
+output_folder = "/home/huangbo/v230603/outputs/20230607_162900_bonds_1-1.8_atoms_1.0_metal_1-3.0/"
 
 
-max_bond_length = 2.466  # 最大键长值
+max_bond_length = 1.8  # 最大键长值
 min_bond_length = 1.0  # 最小键长值
 print("Max bond length: ", max_bond_length)
 print("Min bond length: ", min_bond_length)
 
 check_and_copy_files(input_folder, output_folder, max_bond_length, min_bond_length)
 print("Done!")
-print(len)
+print(len(os.listdir(output_folder)))
